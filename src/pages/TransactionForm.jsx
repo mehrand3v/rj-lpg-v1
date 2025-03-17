@@ -54,6 +54,8 @@ const TransactionForm = () => {
   });
   const isSubmitting = loading.saveTransaction; // Add this line to fix the error
   const [errors, setErrors] = useState({});
+  // Flag to indicate if validation has been triggered (only after form submission)
+  const [validationTriggered, setValidationTriggered] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,11 +152,14 @@ const TransactionForm = () => {
   ]);
 
   const handleSelectCustomer = (customer) => {
+    console.log("Selected customer:", customer); // Debug log
+
     // Filter vehicles for this customer
     const customerVehicles = vehicles.filter(
       (vehicle) => vehicle.customerId === customer.id
     );
 
+    // Explicitly set customerId and clear any customer validation errors
     setFormData({
       ...formData,
       customerId: customer.id,
@@ -164,6 +169,20 @@ const TransactionForm = () => {
       // Use customer-specific rate if available
       cylinderRate: customer.cylinderRate || formData.cylinderRate,
       gasRateKg: customer.gasRate || formData.gasRateKg,
+    });
+
+    // Clear customer error specifically if validation has been triggered
+    if (validationTriggered) {
+      setErrors((prev) => ({
+        ...prev,
+        customer: undefined,
+      }));
+    }
+
+    // Notify user of successful selection
+    toast.success(`Selected customer: ${customer.name}`, {
+      duration: 2000,
+      position: "bottom-right",
     });
   };
 
@@ -272,18 +291,29 @@ const TransactionForm = () => {
       [name]: value,
     });
 
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: null });
+    // Only clear errors if validation has been triggered previously
+    if (validationTriggered && errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: null,
+      });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Set validation as triggered
+    setValidationTriggered(true);
+
     const validationErrors = {};
 
-    if (!formData.customerId && !formData.customerName) {
+    // Validate customer selection
+    if (!formData.customerId) {
+      console.log("Customer validation failed, ID:", formData.customerId); // Debug log
       validationErrors.customer = "Customer is required";
+    } else {
+      console.log("Customer validation passed, ID:", formData.customerId); // Debug log
     }
 
     if (
@@ -382,7 +412,8 @@ const TransactionForm = () => {
         vehicles: [], // Clear vehicles for the customer
       });
 
-      // Clear any validation errors after successful submission
+      // Reset validation state alongside form
+      setValidationTriggered(false);
       setErrors({});
     } catch (error) {
       console.error("Error submitting transaction:", error);
@@ -464,7 +495,7 @@ const TransactionForm = () => {
               <CustomerSelector
                 customers={customers}
                 selectedCustomer={formData.customerName}
-                error={errors.customer}
+                error={validationTriggered ? errors.customer : undefined}
                 onSelectCustomer={handleSelectCustomer}
                 onAddNewCustomer={() => setNewCustomerDialogOpen(true)}
               />
@@ -480,14 +511,14 @@ const TransactionForm = () => {
             {formData.transactionType === "cylinder" ? (
               <CylinderTransactionFields
                 formData={formData}
-                errors={errors}
+                errors={validationTriggered ? errors : {}}
                 onChange={handleChange}
                 onAddNewVehicle={() => setNewVehicleDialogOpen(true)}
               />
             ) : (
               <WeightTransactionFields
                 formData={formData}
-                errors={errors}
+                errors={validationTriggered ? errors : {}}
                 onChange={handleChange}
                 onAddNewVehicle={() => setNewVehicleDialogOpen(true)}
               />

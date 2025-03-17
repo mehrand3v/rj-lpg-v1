@@ -1,5 +1,5 @@
-// CustomerSelector.jsx
 import React, { useState, useEffect } from "react";
+
 import { User, Search, ChevronDown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,12 @@ const CustomerSelector = ({
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(customerSearch.toLowerCase())
   );
-
+  useEffect(() => {
+    // When a customer is selected, log it to confirm the component knows about it
+    if (selectedCustomer) {
+      console.log("CustomerSelector has selected customer:", selectedCustomer);
+    }
+  }, [selectedCustomer]); // CustomerSelector.jsx
   const paginatedCustomers = filteredCustomers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -69,7 +74,7 @@ const CustomerSelector = ({
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-md">

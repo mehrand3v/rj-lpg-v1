@@ -2,6 +2,7 @@ import Layout from "@/components/layout/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Sales from "@/pages/Sales";
+import PaymentPage from "@/pages/PaymentPage";
 import NotFound from "@/pages/NotFound";
 import ErrorPage from "@/pages/ErrorPage";
 // Ensure that your routes are passed to a React Router component
@@ -18,6 +19,7 @@ const routes = [
       { path: "customers", element: <Customers /> }, // Customer list
       { path: "sales", element: <Sales /> }, // Sales list
       { path: "sales/new", element: <TransactionForm /> }, // Sales list
+      { path: "payment", element: <PaymentPage /> }, // Payment page
       //   { path: "customers/billing", element: <MonthlyBillingStatement /> }, // Billing statement page
       //   { path: "customers/transactions", element: <TransactionSummary /> }, // Transaction history page
       //   { path: "customers/transactions/new", element: <TransactionForm /> }, // Add new transaction form
