@@ -1,5 +1,5 @@
-// Sidebar.jsx - Complete component with all fixes
-import React, { useState } from "react";
+// components/shared/Sidebar.jsx
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
