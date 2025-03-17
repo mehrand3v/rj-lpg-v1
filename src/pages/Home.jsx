@@ -1,4 +1,6 @@
 import { useTheme } from "@/components/ThemeProvider";
+import { Button } from "@/components/ui/button";
+
 
 function Home() {
   const { theme, setTheme } = useTheme();
@@ -26,6 +28,7 @@ function Home() {
           System Mode
         </button>
       </div>
+      <Button>Click me</Button>
     </div>
   );
 }
