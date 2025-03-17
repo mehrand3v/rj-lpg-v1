@@ -17,7 +17,7 @@ const routes = [
     children: [
       { index: true, element: <Dashboard /> }, // Default to  Dashboard
       { path: "customers", element: <Customers /> }, // Customer list
-      { path: "sales", element: <Sales /> }, // Sales list
+      { path: "sales", element: <TransactionForm /> }, // Sales list
       { path: "sales/new", element: <TransactionForm /> }, // Sales list
       { path: "payment", element: <PaymentPage /> }, // Payment page
       //   { path: "customers/billing", element: <MonthlyBillingStatement /> }, // Billing statement page
