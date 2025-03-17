@@ -6,7 +6,14 @@ import { logCustomEvent } from "@/services/analytics";
 import { getCurrentUser } from "@/services/auth";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  X,
+  User,
+  Calendar,
+  DollarSign,
+  Package,
+} from "lucide-react";
 
 // Component Imports
 import CustomerSelector from "@components/CustomerSelector";
@@ -20,9 +27,18 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
+  CardDescription,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -50,6 +66,12 @@ const PaymentPage = () => {
   const [errors, setErrors] = useState({});
   const [validationTriggered, setValidationTriggered] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [paginatedHistory, setPaginatedHistory] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading((prev) => ({ ...prev, fetchingData: true }));
@@ -71,6 +93,26 @@ const PaymentPage = () => {
 
     fetchData();
   }, []);
+
+  // Update paginated history when customerHistory or pagination changes
+  useEffect(() => {
+    if (customerHistory.length > 0) {
+      // Sort transactions by date, newest first
+      const sortedHistory = [...customerHistory].sort(
+        (a, b) =>
+          new Date(b.date || b.timestamp) - new Date(a.date || a.timestamp)
+      );
+
+      // Calculate total pages
+      const pages = Math.ceil(sortedHistory.length / itemsPerPage);
+      setTotalPages(pages);
+
+      // Get current page items
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      setPaginatedHistory(sortedHistory.slice(startIndex, endIndex));
+    }
+  }, [customerHistory, currentPage]);
 
   const handleSelectCustomer = (customer) => {
     console.log("Selected customer:", customer);
@@ -98,6 +140,8 @@ const PaymentPage = () => {
     // Set customer history for display in modal
     setCustomerHistory(customerTransactions);
     setCustomerCylinders(cylindersOutstanding);
+    // Reset to first page when selecting a new customer
+    setCurrentPage(1);
 
     setFormData({
       ...formData,
@@ -196,10 +240,6 @@ const PaymentPage = () => {
         type: "payment",
       });
 
-      // Update the customer's balance in customers collection
-      // This would typically be handled by a backend function/trigger
-      // But we'll simulate it here for now
-
       logCustomEvent("payment_recorded", {
         payment_id: paymentId,
         customer_id: formData.customerId,
@@ -246,9 +286,26 @@ const PaymentPage = () => {
   return (
     <Card className="max-w-4xl mx-auto shadow">
       <CardHeader className="bg-muted/40 flex flex-row justify-between items-center">
-        <CardTitle className="text-2xl font-bold">
-          {formData.customerName ? formData.customerName : "Record Payment"}
-        </CardTitle>
+        <div>
+          <CardTitle className="text-2xl font-bold">
+            {formData.customerName ? (
+              <button
+                onClick={() => setShowHistoryModal(true)}
+                className="hover:underline hover:text-primary flex items-center"
+              >
+                <User className="inline mr-2 h-5 w-5" />
+                {formData.customerName}
+              </button>
+            ) : (
+              "Record Payment"
+            )}
+          </CardTitle>
+          {formData.customerName && (
+            <CardDescription className="mt-1">
+              Click on customer name to view history
+            </CardDescription>
+          )}
+        </div>
         <Button
           variant="outline"
           onClick={() => navigate(-1)}
@@ -292,7 +349,10 @@ const PaymentPage = () => {
             {/* Date and Customer Selection Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Payment Date</Label>
+                <Label className="flex items-center">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Payment Date
+                </Label>
                 <DateSelector
                   value={formData.date}
                   onChange={(date) => handleChange("date", date)}
@@ -304,51 +364,48 @@ const PaymentPage = () => {
                 selectedCustomer={formData.customerName}
                 error={validationTriggered ? errors.customer : undefined}
                 onSelectCustomer={handleSelectCustomer}
-                onAddNewCustomer={null} // Removed ability to add customer
+                onAddNewCustomer={null}
               />
             </div>
 
-            {/* Customer Information */}
+            {/* Customer Information - Enhanced Card Display */}
             {formData.customerId && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Current Balance Display */}
-                <div className="bg-muted/30 p-4 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">
-                      Current Balance:
-                    </span>
-                    <span
-                      className={`text-xl font-bold ${
-                        formData.previousBalance > 0
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-green-600 dark:text-green-400"
-                      }`}
-                    >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Payment Due Card */}
+                <Card className="border-2 border-amber-200 dark:border-amber-900 shadow-md">
+                  <CardHeader className="pb-2 pt-4">
+                    <CardTitle className="text-lg flex items-center">
+                      <DollarSign className="mr-2 h-5 w-5 text-amber-500" />
+                      Payment Due
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">
                       ${formData.previousBalance.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Current outstanding balance
+                    </div>
+                  </CardContent>
+                </Card>
 
-                {/* Cylinders Not Returned */}
-                <div className="bg-muted/30 p-4 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">
-                      Cylinders Outstanding:
-                    </span>
-                    <span className="text-xl font-bold text-primary">
+                {/* Cylinders Due Card */}
+                <Card className="border-2 border-blue-200 dark:border-blue-900 shadow-md">
+                  <CardHeader className="pb-2 pt-4">
+                    <CardTitle className="text-lg flex items-center">
+                      <Package className="mr-2 h-5 w-5 text-blue-500" />
+                      Cylinders Due
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                       {customerCylinders}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground text-right">
-                    <button
-                      type="button"
-                      className="text-primary underline hover:text-primary/80"
-                      onClick={() => setShowHistoryModal(true)}
-                    >
-                      View transaction history
-                    </button>
-                  </div>
-                </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Empty cylinders to be returned
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
@@ -356,7 +413,10 @@ const PaymentPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Payment Amount */}
               <div className="space-y-2">
-                <Label htmlFor="paymentAmount">Payment Amount ($)</Label>
+                <Label htmlFor="paymentAmount" className="flex items-center">
+                  <DollarSign className="mr-1 h-4 w-4" />
+                  Payment Amount ($)
+                </Label>
                 <Input
                   id="paymentAmount"
                   type="text"
@@ -381,7 +441,11 @@ const PaymentPage = () => {
 
               {/* Cylinders Returned */}
               <div className="space-y-2">
-                <Label htmlFor="cylindersReturned">
+                <Label
+                  htmlFor="cylindersReturned"
+                  className="flex items-center"
+                >
+                  <Package className="mr-1 h-4 w-4" />
                   Empty Cylinders Returned
                 </Label>
                 <Input
@@ -464,95 +528,272 @@ const PaymentPage = () => {
               />
             </div>
 
-            {/* Transaction History Modal */}
+            {/* Full Page History Modal */}
             {showHistoryModal && (
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                <div className="bg-background rounded-lg shadow-lg w-full max-w-4xl max-h-[80vh] flex flex-col">
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-lg font-medium">
-                      Transaction History: {formData.customerName}
-                    </h2>
-                    <button
-                      onClick={() => setShowHistoryModal(false)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="overflow-y-auto p-4 flex-1">
-                    {customerHistory.length > 0 ? (
-                      <div className="space-y-4">
-                        <h3 className="text-md font-medium">Transactions</h3>
-                        <div className="border rounded-md overflow-hidden">
-                          <table className="w-full">
-                            <thead className="bg-muted">
-                              <tr>
-                                <th className="p-2 text-left">Date</th>
-                                <th className="p-2 text-left">Type</th>
-                                <th className="p-2 text-right">Amount</th>
-                                <th className="p-2 text-right">Cylinders</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {customerHistory.map((transaction, index) => (
-                                <tr key={index} className="border-t">
-                                  <td className="p-2">
-                                    {new Date(
-                                      transaction.date
-                                    ).toLocaleDateString()}
+              <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
+                <div className="p-4 border-b flex justify-between items-center">
+                  <h2 className="text-xl font-bold flex items-center">
+                    <User className="mr-2 h-5 w-5" />
+                    {formData.customerName} - Transaction History
+                  </h2>
+                  <button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4">
+                  {customerHistory.length > 0 ? (
+                    <div className="space-y-6">
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card>
+                          <CardHeader className="py-3">
+                            <CardTitle className="text-md">
+                              Current Balance
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div
+                              className={`text-2xl font-bold ${
+                                formData.previousBalance > 0
+                                  ? "text-amber-600 dark:text-amber-400"
+                                  : "text-green-600 dark:text-green-400"
+                              }`}
+                            >
+                              ${formData.previousBalance.toFixed(2)}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="py-3">
+                            <CardTitle className="text-md">
+                              Cylinders Outstanding
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                              {customerCylinders}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="py-3">
+                            <CardTitle className="text-md">
+                              Total Transactions
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-primary">
+                              {customerHistory.length}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Transactions Table */}
+                      <div className="rounded-md border">
+                        <table className="w-full">
+                          <thead className="bg-muted">
+                            <tr>
+                              <th className="p-3 text-left">Date</th>
+                              <th className="p-3 text-left">Type</th>
+                              <th className="p-3 text-right">Amount</th>
+                              <th className="p-3 text-right">Balance After</th>
+                              <th className="p-3 text-right">Cylinders</th>
+                              <th className="p-3 text-left">Notes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedHistory.map((transaction, index) => {
+                              const date = new Date(
+                                transaction.date || transaction.timestamp
+                              );
+                              const isPayment =
+                                transaction.paymentAmount !== undefined;
+
+                              return (
+                                <tr
+                                  key={index}
+                                  className="border-t hover:bg-muted/50"
+                                >
+                                  <td className="p-3">
+                                    {date.toLocaleDateString()} <br />
+                                    <span className="text-xs text-muted-foreground">
+                                      {date.toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
                                   </td>
-                                  <td className="p-2">
-                                    {transaction.transactionType === "cylinder"
-                                      ? "Cylinder Sale"
-                                      : "Weight-Based"}
+                                  <td className="p-3">
+                                    {isPayment ? (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        Payment
+                                      </span>
+                                    ) : transaction.transactionType ===
+                                      "cylinder" ? (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        Cylinder Sale
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                        Weight Sale
+                                      </span>
+                                    )}
                                   </td>
-                                  <td className="p-2 text-right">
+                                  <td className="p-3 text-right">
+                                    {isPayment ? (
+                                      <span className="text-green-600 dark:text-green-400">
+                                        -${transaction.paymentAmount.toFixed(2)}
+                                      </span>
+                                    ) : (
+                                      <span className="text-amber-600 dark:text-amber-400">
+                                        +$
+                                        {transaction.totalAmount?.toFixed(2) ||
+                                          "0.00"}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-right">
                                     $
-                                    {transaction.totalAmount?.toFixed(2) ||
-                                      "0.00"}
+                                    {isPayment
+                                      ? transaction.newBalance?.toFixed(2)
+                                      : transaction.balanceAfter ||
+                                        transaction.newBalance ||
+                                        "N/A"}
                                   </td>
-                                  <td className="p-2 text-right">
-                                    {transaction.transactionType === "cylinder"
-                                      ? `+${
-                                          transaction.cylindersSold || 0
-                                        } / -${
-                                          transaction.cylindersReturned || 0
-                                        }`
-                                      : "N/A"}
+                                  <td className="p-3 text-right">
+                                    {isPayment &&
+                                    transaction.cylindersReturned ? (
+                                      <span className="text-green-600 dark:text-green-400">
+                                        -{transaction.cylindersReturned}
+                                      </span>
+                                    ) : transaction.transactionType ===
+                                      "cylinder" ? (
+                                      <span>
+                                        +{transaction.cylindersSold || 0}
+                                        {transaction.cylindersReturned ? (
+                                          <span className="text-green-600 dark:text-green-400">
+                                            /-{transaction.cylindersReturned}
+                                          </span>
+                                        ) : (
+                                          ""
+                                        )}
+                                      </span>
+                                    ) : (
+                                      "N/A"
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-left max-w-xs truncate">
+                                    {transaction.notes || "-"}
                                   </td>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
-                    ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        No transaction history available
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <Pagination className="justify-center">
+                          <PaginationContent>
+                            {currentPage > 1 && (
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() =>
+                                    setCurrentPage((prev) =>
+                                      Math.max(prev - 1, 1)
+                                    )
+                                  }
+                                />
+                              </PaginationItem>
+                            )}
+
+                            {Array.from({ length: totalPages }, (_, i) => i + 1)
+                              .filter(
+                                (page) =>
+                                  page === 1 ||
+                                  page === totalPages ||
+                                  (page >= currentPage - 1 &&
+                                    page <= currentPage + 1)
+                              )
+                              .map((page, index, array) => {
+                                // Add ellipsis if there are gaps in the sequence
+                                if (index > 0 && page - array[index - 1] > 1) {
+                                  return (
+                                    <React.Fragment key={`ellipsis-${page}`}>
+                                      <PaginationItem>
+                                        <span className="px-4 py-2">...</span>
+                                      </PaginationItem>
+                                      <PaginationItem>
+                                        <PaginationLink
+                                          onClick={() => setCurrentPage(page)}
+                                          isActive={page === currentPage}
+                                        >
+                                          {page}
+                                        </PaginationLink>
+                                      </PaginationItem>
+                                    </React.Fragment>
+                                  );
+                                }
+
+                                return (
+                                  <PaginationItem key={page}>
+                                    <PaginationLink
+                                      onClick={() => setCurrentPage(page)}
+                                      isActive={page === currentPage}
+                                    >
+                                      {page}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                );
+                              })}
+
+                            {currentPage < totalPages && (
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() =>
+                                    setCurrentPage((prev) =>
+                                      Math.min(prev + 1, totalPages)
+                                    )
+                                  }
+                                />
+                              </PaginationItem>
+                            )}
+                          </PaginationContent>
+                        </Pagination>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <div className="mx-auto w-16 h-16 mb-4 opacity-20">
+                        <Package className="w-full h-full" />
                       </div>
-                    )}
-                  </div>
-                  <div className="p-4 border-t">
-                    <Button
-                      onClick={() => setShowHistoryModal(false)}
-                      className="w-full"
-                    >
-                      Close
-                    </Button>
-                  </div>
+                      <h3 className="text-xl font-medium mb-2">
+                        No transaction history
+                      </h3>
+                      <p>
+                        This customer doesn't have any transaction records yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 border-t">
+                  <Button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="w-full"
+                    variant="default"
+                    size="lg"
+                  >
+                    Close History View
+                  </Button>
                 </div>
               </div>
             )}
@@ -597,8 +838,6 @@ const PaymentPage = () => {
           )}
         </Button>
       </CardFooter>
-
-      {/* Dialogs - Removed NewCustomerDialog */}
     </Card>
   );
 };
