@@ -7,10 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 const CylinderTransactionFields = ({ formData, errors, onChange }) => {
   return (
     <Card className="bg-card/30">
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="cylindersSold">Cylinders Sold</Label>
+      <CardContent className="pt-3 pb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="cylindersSold" className="text-sm">
+              Cylinders Sold
+            </Label>
             <Input
               id="cylindersSold"
               type="text"
@@ -19,17 +21,19 @@ const CylinderTransactionFields = ({ formData, errors, onChange }) => {
               aria-invalid={errors.cylindersSold ? "true" : "false"}
               value={formData.cylindersSold}
               onChange={(e) => onChange("cylindersSold", e.target.value)}
-              className={
+              className={`h-8 ${
                 errors.cylindersSold ? "border-destructive" : undefined
-              }
+              }`}
             />
             {errors.cylindersSold && (
-              <p className="text-sm text-destructive">{errors.cylindersSold}</p>
+              <p className="text-xs text-destructive">{errors.cylindersSold}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cylinderRate">Cylinder Rate ($)</Label>
+          <div className="space-y-1">
+            <Label htmlFor="cylinderRate" className="text-sm">
+              Cylinder Rate ($)
+            </Label>
             <Input
               id="cylinderRate"
               type="text"
@@ -37,11 +41,14 @@ const CylinderTransactionFields = ({ formData, errors, onChange }) => {
               placeholder="Enter rate"
               value={formData.cylinderRate}
               onChange={(e) => onChange("cylinderRate", e.target.value)}
+              className="h-8"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cylindersReturned">Cylinders Returned</Label>
+          <div className="space-y-1">
+            <Label htmlFor="cylindersReturned" className="text-sm">
+              Cylinders Returned
+            </Label>
             <Input
               id="cylindersReturned"
               type="text"
@@ -49,11 +56,14 @@ const CylinderTransactionFields = ({ formData, errors, onChange }) => {
               placeholder="Enter amount"
               value={formData.cylindersReturned}
               onChange={(e) => onChange("cylindersReturned", e.target.value)}
+              className="h-8"
             />
           </div>
 
-          <div className="space-y-2 col-span-full md:col-span-1">
-            <Label htmlFor="totalCylindersDue">Total Cylinders Due</Label>
+          <div className="space-y-1">
+            <Label htmlFor="totalCylindersDue" className="text-sm">
+              Total Cylinders Due
+            </Label>
             <Input
               id="totalCylindersDue"
               value={
@@ -62,7 +72,7 @@ const CylinderTransactionFields = ({ formData, errors, onChange }) => {
                   ? Math.round(formData.totalCylindersDue)
                   : 0
               }
-              className="bg-muted"
+              className="bg-muted h-8"
               readOnly
             />
           </div>

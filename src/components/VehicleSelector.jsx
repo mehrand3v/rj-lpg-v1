@@ -48,16 +48,16 @@ const VehicleSelector = ({
     <div>
       <Button
         variant="outline"
-        className="w-full justify-between"
+        className="w-full justify-between h-8 text-sm font-normal"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="flex items-center">
-          <Truck className="mr-2 h-4 w-4" />
+          <Truck className="mr-2 h-3 w-3" />
           <span className={!selectedVehicle ? "text-muted-foreground" : ""}>
             {selectedVehicle || "Select vehicle"}
           </span>
         </div>
-        <ChevronDown className="h-4 w-4 opacity-50" />
+        <ChevronDown className="h-3 w-3 opacity-50" />
       </Button>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -65,13 +65,12 @@ const VehicleSelector = ({
           <DialogHeader>
             <DialogTitle>Select Vehicle</DialogTitle>
             <DialogDescription>
-              Choose a vehicle from the list or search by registration, make, or
-              model
+              Choose a vehicle from the list
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
-            <div className="pb-4">
+          <div className="py-2">
+            <div className="pb-2">
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
@@ -86,13 +85,13 @@ const VehicleSelector = ({
               </div>
             </div>
 
-            <div className="space-y-1 max-h-[40vh] overflow-y-auto border rounded-md p-1">
+            <div className="space-y-1 max-h-[30vh] overflow-y-auto border rounded-md p-1">
               {paginatedVehicles.length > 0 ? (
                 paginatedVehicles.map((vehicle, index) => (
                   <Button
                     key={index}
                     variant="ghost"
-                    className="w-full justify-start font-normal"
+                    className="w-full justify-start font-normal h-8 text-sm"
                     onClick={() => handleSelectVehicle(vehicle.registration)}
                   >
                     <div className="flex flex-col items-start">
@@ -108,7 +107,7 @@ const VehicleSelector = ({
                   </Button>
                 ))
               ) : (
-                <div className="px-4 py-3 text-center text-muted-foreground">
+                <div className="px-4 py-2 text-center text-muted-foreground text-sm">
                   {vehicles.length > 0
                     ? "No matching vehicles"
                     : "No vehicles available"}
@@ -117,7 +116,7 @@ const VehicleSelector = ({
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center justify-between mt-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -125,10 +124,11 @@ const VehicleSelector = ({
                     setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
                   disabled={currentPage === 1}
+                  className="h-7 text-xs"
                 >
                   Previous
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </span>
                 <Button
@@ -138,6 +138,7 @@ const VehicleSelector = ({
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
+                  className="h-7 text-xs"
                 >
                   Next
                 </Button>
@@ -146,7 +147,11 @@ const VehicleSelector = ({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancel
             </Button>
           </DialogFooter>

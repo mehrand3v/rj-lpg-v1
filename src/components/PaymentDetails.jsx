@@ -18,10 +18,12 @@ const PaymentDetails = ({ formData, onChange }) => {
 
   return (
     <Card className="bg-card/30">
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="totalAmount">Total Amount ($)</Label>
+      <CardContent className="pt-3 pb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="totalAmount" className="text-sm">
+              Total Amount ($)
+            </Label>
             <Input
               id="totalAmount"
               value={
@@ -29,13 +31,15 @@ const PaymentDetails = ({ formData, onChange }) => {
                   ? formData.totalAmount.toFixed(2)
                   : "0.00"
               }
-              className="bg-muted"
+              className="bg-muted h-8"
               readOnly
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="previousBalance">Previous Balance ($)</Label>
+          <div className="space-y-1">
+            <Label htmlFor="previousBalance" className="text-sm">
+              Previous Balance ($)
+            </Label>
             <Input
               id="previousBalance"
               value={
@@ -43,13 +47,15 @@ const PaymentDetails = ({ formData, onChange }) => {
                   ? formData.previousBalance.toFixed(2)
                   : "0.00"
               }
-              className="bg-muted"
+              className="bg-muted h-8"
               readOnly
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amountReceived">Amount Received ($)</Label>
+          <div className="space-y-1">
+            <Label htmlFor="amountReceived" className="text-sm">
+              Amount Received ($)
+            </Label>
             <Input
               id="amountReceived"
               type="text"
@@ -57,11 +63,12 @@ const PaymentDetails = ({ formData, onChange }) => {
               placeholder="Enter amount"
               value={formData.amountReceived}
               onChange={(e) => onChange("amountReceived", e.target.value)}
+              className="h-8"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="remainingBalance">
+          <div className="space-y-1">
+            <Label htmlFor="remainingBalance" className="text-sm">
               {remainingBalance > 0 ? "Remaining Balance" : "Credit Balance"}{" "}
               ($)
             </Label>
@@ -72,7 +79,7 @@ const PaymentDetails = ({ formData, onChange }) => {
                   ? Math.abs(formData.remainingBalance).toFixed(2)
                   : "0.00"
               }
-              className={getRemainingBalanceClasses()}
+              className={`h-8 ${getRemainingBalanceClasses()}`}
               readOnly
             />
           </div>

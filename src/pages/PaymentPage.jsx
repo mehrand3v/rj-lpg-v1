@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { addDocument, getDocuments } from "@/services/db";
 import { logCustomEvent } from "@/services/analytics";
 import { getCurrentUser } from "@/services/auth";
-import { toast } from "react-hot-toast";
+// Replace react-hot-toast with our custom toast
+import { useToast } from "@/components/ui/toast";
 import { format } from "date-fns";
 import {
   ArrowLeft,
@@ -41,6 +42,8 @@ import {
 } from "@/components/ui/pagination";
 
 const PaymentPage = () => {
+  // Initialize the toast hook
+  const { success, error } = useToast();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -83,9 +86,10 @@ const PaymentPage = () => {
 
         setCustomers(customersData);
         setTransactions(transactionsData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load necessary data");
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        // Updated toast.error to error
+        error("Failed to load necessary data");
       } finally {
         setLoading((prev) => ({ ...prev, fetchingData: false }));
       }
@@ -157,7 +161,8 @@ const PaymentPage = () => {
       }));
     }
 
-    toast.success(`Selected customer: ${customer.name}`, {
+    // Updated toast.success to success
+    success(`Selected customer: ${customer.name}`, {
       duration: 2000,
       position: "bottom-right",
     });
@@ -247,7 +252,8 @@ const PaymentPage = () => {
         payment_type: formData.paymentType,
       });
 
-      toast.success(
+      // Updated toast.success to success
+      success(
         `Payment of $${paymentData.paymentAmount.toFixed(2)} recorded for ${
           formData.customerName
         }`,
@@ -272,9 +278,10 @@ const PaymentPage = () => {
       // Reset validation state alongside form
       setValidationTriggered(false);
       setErrors({});
-    } catch (error) {
-      console.error("Error submitting payment:", error);
-      toast.error("Failed to record payment. Please try again.", {
+    } catch (err) {
+      console.error("Error submitting payment:", err);
+      // Updated toast.error to error
+      error("Failed to record payment. Please try again.", {
         duration: 5000,
         position: "top-center",
       });

@@ -16,10 +16,12 @@ const WeightTransactionFields = ({
 
   return (
     <Card className="bg-card/30">
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="vehicleRego">Vehicle Registration</Label>
+      <CardContent className="pt-3 pb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1 sm:col-span-2">
+            <Label htmlFor="vehicleRego" className="text-sm">
+              Vehicle Registration
+            </Label>
             <VehicleSelector
               vehicles={vehicles}
               selectedVehicle={formData.vehicleRego}
@@ -28,8 +30,10 @@ const WeightTransactionFields = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="gasRateKg">Gas Rate ($/kg)</Label>
+          <div className="space-y-1">
+            <Label htmlFor="gasRateKg" className="text-sm">
+              Gas Rate ($/kg)
+            </Label>
             <Input
               id="gasRateKg"
               type="text"
@@ -37,11 +41,14 @@ const WeightTransactionFields = ({
               placeholder="Enter rate"
               value={formData.gasRateKg}
               onChange={(e) => onChange("gasRateKg", e.target.value)}
+              className="h-8"
             />
           </div>
 
-          <div className="space-y-2 col-span-1">
-            <Label htmlFor="gasSoldKg">Gas Sold (kg)</Label>
+          <div className="space-y-1 col-span-1 sm:col-span-3">
+            <Label htmlFor="gasSoldKg" className="text-sm">
+              Gas Sold (kg)
+            </Label>
             <Input
               id="gasSoldKg"
               type="text"
@@ -50,10 +57,12 @@ const WeightTransactionFields = ({
               aria-invalid={errors.gasSoldKg ? "true" : "false"}
               value={formData.gasSoldKg}
               onChange={(e) => onChange("gasSoldKg", e.target.value)}
-              className={errors.gasSoldKg ? "border-destructive" : undefined}
+              className={`h-8 ${
+                errors.gasSoldKg ? "border-destructive" : undefined
+              }`}
             />
             {errors.gasSoldKg && (
-              <p className="text-sm text-destructive">{errors.gasSoldKg}</p>
+              <p className="text-xs text-destructive">{errors.gasSoldKg}</p>
             )}
           </div>
         </div>
